@@ -1,0 +1,9 @@
+# Proof of Concept
+
+1) Pick Audio
+2) Transcribe Audio
+4) Convert to XML for Resolve/Final Cut
+
+# Prototype with StreamLit
+
+# Get a Job
