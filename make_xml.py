@@ -7,6 +7,7 @@ wcps: num of chunks/seconds
 
 import html
 from typing import List, Union
+from math import ceil
 
 
 def number_generator(num_list):
@@ -54,8 +55,8 @@ def make_xml_from_words(word_start: List[int], word_list: List[str], wcps: Union
                 <project name="Original (Resolve)">
                     <sequence format="r0" tcStart="3600/1s" tcFormat="NDF" duration="20/1s">
                         <spine>
-                            <gap start="3600/1s" name="Gap" offset="3600/1s" duration="20/1s">
-    """
+                            <gap start="3600/1s" name="Gap" offset="3600/1s" duration="{}/1s">
+    """.format(ceil(word_end[-1]/wcps))
 
     text_list.append(begin)
 

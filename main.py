@@ -50,6 +50,8 @@ if __name__ == "__main__":
 
 
     # Add punctutation, fix spelling errors
+    pickle(decoded)
+    """
     fastpunct = FastPunct()
     decoded = decoded.lower()
     decoded = decoded.split()
@@ -57,7 +59,7 @@ if __name__ == "__main__":
     decoded = [" ".join(decoded[i : i + n]) for i in range(0, len(decoded), n)]
     decoded = fastpunct.punct(decoded, correct=True)
     decoded = " ".join(decoded)
-
+    """
 
     # Make word list
     word_list = decoded.split()
@@ -65,7 +67,7 @@ if __name__ == "__main__":
 
     # Make sure length of words are the same
     assert len(old_word_list) == len(word_list)
-    pickle([word_list, word_start, word_end])
+    # pickle([word_list, word_start, word_end])
     word_list, word_start, word_end = split_by_words(
         word_list=word_list, word_start=word_start, word_end=word_end
     )
