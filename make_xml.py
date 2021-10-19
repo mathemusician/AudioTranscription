@@ -18,6 +18,7 @@ def make_xml_from_words(word_start: List[int], word_list: List[str], wcps: Union
     makes a fcpxml file from word chunks
     """
     # sanity checks
+    assert len(word_start) == len(word_list)
     assert len(word_start) == len(word_end)
     start_gen = number_generator(word_start)
     end_gen = number_generator(word_end)

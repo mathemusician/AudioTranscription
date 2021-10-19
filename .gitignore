@@ -134,3 +134,4 @@ data/*
 lightning_logs/*
 *.wav
 *.fcpxml
+*.pickle
