@@ -13,6 +13,7 @@ from split_texts import split_by_words
 from make_xml import make_xml_from_words
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from flash.audio import SpeechRecognition, SpeechRecognitionData
+import io
 #from data import SpeechRecognitionData
 # from transformers import Wav2Vec2
 
@@ -126,9 +127,7 @@ def main():
 
     if uploaded_file is not None:
         # Convert the file to numpy.
-        file_bytes = np.asarray(bytearray(uploaded_file.read()))
-        print(uploaded_file.read())
-        print(bytearray(uploaded_file.read()))
+        file_bytes = io.BytesIO(uploaded_file.read())
         audio_numpy = convert_audio_file(file_bytes)
         text = process_audio(audio_numpy)
 
