@@ -14,6 +14,7 @@ from make_xml import make_xml_from_words
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from flash.audio import SpeechRecognition, SpeechRecognitionData
 import io
+import scipy.signal as sps
 #from data import SpeechRecognitionData
 # from transformers import Wav2Vec2
 
@@ -41,11 +42,10 @@ def unpickle(filename="data.pickle"):
 
 
 def convert_audio_file(audio_bytes) -> None:
-    audio_file = Path("/Users/mosaicchurchhtx/Desktop/Untitled.m4a")
-    # x, sr = librosa.load(audio_file, sr=16000)
-    x, sr = soundfile.read(audio_bytes)
-    resampled_audio = librosa.resample(x, sr, 16000)
-    # soundfile.write("Test3.wav", x, samplerate=16000)
+    new_rate = 16000
+    clip, sample_rate = soundfile.read(audio_bytes)
+    number_of_samples = round(len(clip) * float(new_rate) / sample_rate)
+    resampled_audio = sps.resample(clip, number_of_samples)
     return resampled_audio
 
 
