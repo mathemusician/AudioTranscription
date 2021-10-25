@@ -17,7 +17,7 @@ from flash.audio import SpeechRecognition, SpeechRecognitionData
 # from transformers import Wav2Vec2
 
 
-#@st.cache(persist=True)
+@st.cache(persist=True)
 def model_and_processor():
     # load model and processor once
     backbone = "facebook/wav2vec2-base-960h"
@@ -127,6 +127,8 @@ def main():
     if uploaded_file is not None:
         # Convert the file to numpy.
         file_bytes = np.asarray(bytearray(uploaded_file.read()))
+        print(uploaded_file.read())
+        print(bytearray(uploaded_file.read()))
         audio_numpy = convert_audio_file(file_bytes)
         text = process_audio(audio_numpy)
 
