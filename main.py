@@ -53,7 +53,7 @@ def transcribe_audio(audio_numpy):
     """custom_datamodule = SpeechRecognitionData.from_json(
         input_fields="file", target_fields="text", test_file="text.json"
     )"""
-    custom_datamodule = SpeechRecognitionData.from_numpy(test_data=audio_numpy)
+    custom_datamodule = SpeechRecognitionData.from_json("./text.json", test_data=audio_numpy)
 
     predictions = model.predict([custom_datamodule._test_ds[0]])
 
