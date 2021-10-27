@@ -117,7 +117,7 @@ def process_audio(audio_numpy):
     decoded, batch_decoded = transcribe_audio(audio_numpy)
     word_start, word_end = time_decoder(decoded, batch_decoded)
 
-    length_of_media = librosa.get_duration(*librosa.load("Test3.wav"))  # 12.11 seconds
+    length_of_media = librosa.get_duration(y=audio_numpy, sr=16000)  # 12.11 seconds
     wcps = len(batch_decoded) / length_of_media
 
     # Make word list
