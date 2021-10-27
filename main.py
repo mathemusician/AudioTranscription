@@ -42,6 +42,13 @@ def unpickle(filename="data.pickle"):
         return pl.load(file_handler)
 
 
+def download_data(data):
+    output_data = pickle.dumps(data)
+    b64 = base64.b64encode(output_data).decode()
+    href = f'<a href="data:file/output_data;base64,{b64}" download="myfile.pkl">Download data .pkl File</a>'
+    st.markdown(href, unsafe_allow_html=True)
+
+
 def convert_audio_file(audio_bytes) -> None:
     new_rate = 16000
     try:
@@ -160,11 +167,7 @@ def main():
                 file_name=f"{project_name}.fcpxml",
             )
         except:
-            btn = st.download_button(
-                label="Download problem bytes",
-                data=file_bytes,
-                file_name=f"{project_name}.pkl",
-            )
+            download_data(file_bytes)
     
 
 if __name__ == "__main__":
