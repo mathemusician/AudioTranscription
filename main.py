@@ -20,7 +20,7 @@ from flash.core.data.data_source import DefaultDataKeys
 # from transformers import Wav2Vec2
 
 
-@st.cache(persist=True)
+@st.cache(persist=True, allow_output_mutation=True)
 def model_and_processor():
     # load model and processor once
     backbone = "facebook/wav2vec2-base-960h"
