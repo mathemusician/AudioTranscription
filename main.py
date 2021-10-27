@@ -15,6 +15,7 @@ from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from flash.audio import SpeechRecognition, SpeechRecognitionData
 import io
 import scipy.signal as sps
+from flash.core.data.data_source import DefaultDataKeys
 #from data import SpeechRecognitionData
 # from transformers import Wav2Vec2
 
@@ -23,7 +24,7 @@ import scipy.signal as sps
 def model_and_processor():
     # load model and processor once
     backbone = "facebook/wav2vec2-base-960h"
-    model = Wav2Vec2ForCTC.from_pretrained(backbone)
+    model = SpeechRecognition(backbone)  # Wav2Vec2ForCTC.from_pretrained(backbone)
     processor = Wav2Vec2Processor.from_pretrained(backbone)
     return model, processor
 
@@ -53,11 +54,22 @@ def transcribe_audio(audio_numpy):
     """custom_datamodule = SpeechRecognitionData.from_json(
         input_fields="file", target_fields="text", test_file="text.json"
     )"""
-    custom_datamodule = SpeechRecognitionData.from_json("./text.json", test_data=audio_numpy)
+    # custom_datamodule = SpeechRecognitionData.from_numpy(test_data=audio_numpy)
+    if audio_numpy.shape[0] > audio_numpy.shape[1]:
+        audio_numpy = audio_numpy.transpose()
 
-    predictions = model.predict([custom_datamodule._test_ds[0]])
+    input_ = processor(librosa.to_mono(audio_numpy))
+    audio_dict = {
+        DefaultDataKeys.INPUT: input_["input_values"][0],
+        DefaultDataKeys.TARGET: "dummy target",
+        DefaultDataKeys.METADATA: {"sampling_rate": 16000},
+    }
 
-    pred_ids = torch.argmax(torch.stack(predictions[0].logits), dim=-1)
+    # predictions = model.predict([custom_datamodule._test_ds[0]])
+
+    predictions = model.predict([audio_dict])
+
+    pred_ids = torch.argmax(predictions[0].logits, dim=-1)
 
     decoded = processor.decode(pred_ids)
     batch_decoded = processor.batch_decode(pred_ids)
