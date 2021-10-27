@@ -148,16 +148,23 @@ def main():
     if uploaded_file is not None:
         # Convert the file to numpy.
         file_bytes = io.BytesIO(uploaded_file.read())
-        audio_numpy = convert_audio_file(file_bytes)
-        text, word_list = process_audio(audio_numpy)
+        try:
+            audio_numpy = convert_audio_file(file_bytes)
+            text, word_list = process_audio(audio_numpy)
 
-        st.text_area('Text', value='\n'.join(word_list))
+            st.text_area('Text', value='\n'.join(word_list))
 
-        btn = st.download_button(
-            label="Download FCPX project file",
-            data=text,
-            file_name=f"{project_name}.fcpxml",
-        )
+            btn = st.download_button(
+                label="Download FCPX project file",
+                data=text,
+                file_name=f"{project_name}.fcpxml",
+            )
+        except:
+            btn = st.download_button(
+                label="Download problem bytes",
+                data=file_bytes,
+                file_name=f"{project_name}.pkl",
+            )
     
 
 if __name__ == "__main__":
