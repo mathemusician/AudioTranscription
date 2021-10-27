@@ -55,8 +55,11 @@ def transcribe_audio(audio_numpy):
         input_fields="file", target_fields="text", test_file="text.json"
     )"""
     # custom_datamodule = SpeechRecognitionData.from_numpy(test_data=audio_numpy)
-    if audio_numpy.shape[0] > audio_numpy.shape[1]:
-        audio_numpy = audio_numpy.transpose()
+    try:
+        if audio_numpy.shape[0] > audio_numpy.shape[1]:
+            audio_numpy = audio_numpy.transpose()
+    except IndexError:
+        pass
 
     input_ = processor(librosa.to_mono(audio_numpy))
     audio_dict = {
