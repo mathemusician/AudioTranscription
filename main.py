@@ -141,8 +141,9 @@ def main():
 
     if uploaded_file is not None:
         # Convert the file to numpy.
-        file_bytes = io.BytesIO(uploaded_file.read())
-        audio_numpy = convert_audio_file(file_bytes)
+        audio_bytes = io.BytesIO(uploaded_file.read())
+        audio_bytes.seek(0)
+        audio_numpy = convert_audio_file(audio_bytes.read())
         text, word_list = process_audio(audio_numpy)
 
         st.text_area('Text', value='\n'.join(word_list))
