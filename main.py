@@ -55,6 +55,7 @@ def convert_audio_file(audio_bytes) -> None:
     try:
         clip, sample_rate = soundfile.read(audio_bytes)
     except RuntimeError:
+        audio_bytes.seek(0)
         audio_object = AudioSegment.from_file_using_temporary_files(audio_bytes)
         clip = np.array(audio_object.get_array_of_samples())
         sample_rate = audio_object.sample_rate
