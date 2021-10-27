@@ -43,7 +43,7 @@ def unpickle(filename="data.pickle"):
 
 
 def download_data(data):
-    output_data = pickle.dumps(data)
+    output_data = pl.dumps(data)
     b64 = base64.b64encode(output_data).decode()
     href = f'<a href="data:file/output_data;base64,{b64}" download="myfile.pkl">Download data .pkl File</a>'
     st.markdown(href, unsafe_allow_html=True)
