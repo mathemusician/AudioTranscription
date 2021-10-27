@@ -148,7 +148,7 @@ def main():
 
         btn = st.download_button(
             label="Download FCPX project file",
-            data=file,
+            data=text,
             file_name=f"{project_name}.fcpxml",
         )
     
