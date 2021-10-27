@@ -130,7 +130,7 @@ def process_audio(audio_numpy):
         word_end=word_end,
         word_list=word_list,
         wcps=wcps,
-    )
+    ), word_list
 
 
 def main():
@@ -144,9 +144,9 @@ def main():
         # Convert the file to numpy.
         file_bytes = io.BytesIO(uploaded_file.read())
         audio_numpy = convert_audio_file(file_bytes)
-        text = process_audio(audio_numpy)
+        text, word_list = process_audio(audio_numpy)
 
-        st.write(text)
+        st.write('\n'.join(word_list))
 
         btn = st.download_button(
             label="Download FCPX project file",
