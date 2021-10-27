@@ -14,14 +14,15 @@ from pydub import AudioSegment
 from consolidate import time_decoder
 from split_texts import split_by_words
 from make_xml import make_xml_from_words
+from transformers import Wav2Vec2Processor
 from flash.core.data.data_source import DefaultDataKeys
-from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 from flash.audio import SpeechRecognition, SpeechRecognitionData
 #from data import SpeechRecognitionData
 # from transformers import Wav2Vec2
 
 
-@st.cache(allow_output_mutation=True)
+#@st.cache(allow_output_mutation=True)
+#@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
 def model_and_processor():
     # load model and processor once
     backbone = "facebook/wav2vec2-base-960h"
