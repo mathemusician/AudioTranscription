@@ -21,8 +21,8 @@ from flash.audio import SpeechRecognition, SpeechRecognitionData
 # from transformers import Wav2Vec2
 
 
-#@st.cache(allow_output_mutation=True)
 #@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
+@st.cache(allow_output_mutation=True)
 def model_and_processor():
     # load model and processor once
     backbone = "facebook/wav2vec2-base-960h"
