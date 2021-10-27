@@ -9,7 +9,7 @@ import streamlit as st
 from pathlib import Path
 from copy import deepcopy
 import scipy.signal as sps
-import scipy.io.wavfile.read as read
+import scipy.io.wavfile as reader
 from consolidate import time_decoder
 from split_texts import split_by_words
 from make_xml import make_xml_from_words
@@ -47,7 +47,7 @@ def convert_audio_file(audio_bytes) -> None:
     try:
         clip, sample_rate = soundfile.read(audio_bytes)
     except RuntimeError:
-        sample_rate, clip = read(audio_bytes)
+        sample_rate, clip = reader.read(audio_bytes)
     number_of_samples = round(len(clip) * float(new_rate) / sample_rate)
     resampled_audio = sps.resample(clip, number_of_samples)
     return resampled_audio
