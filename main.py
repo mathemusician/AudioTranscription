@@ -146,6 +146,8 @@ def main():
         audio_numpy = convert_audio_file(file_bytes)
         text = process_audio(audio_numpy)
 
+        st.write(text)
+
         btn = st.download_button(
             label="Download FCPX project file",
             data=text,
