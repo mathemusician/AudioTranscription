@@ -58,7 +58,7 @@ def convert_audio_file(audio_bytes) -> None:
         audio_bytes.seek(0)
         audio_object = AudioSegment.from_file_using_temporary_files(audio_bytes)
         clip = np.array(audio_object.get_array_of_samples())
-        sample_rate = audio_object.sample_rate
+        sample_rate = audio_object.frame_rate
     number_of_samples = round(len(clip) * float(new_rate) / sample_rate)
     resampled_audio = sps.resample(clip, number_of_samples)
     return resampled_audio
@@ -168,7 +168,8 @@ def main():
                 data=text,
                 file_name=f"{project_name}.fcpxml",
             )
-        except:
+        except Error as e:
+            st.write(e)
             download_data(file_bytes)
     
 
