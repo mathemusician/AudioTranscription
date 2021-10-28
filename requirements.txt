@@ -8,8 +8,6 @@ Pillow==8.4.0
 pytorch_lightning==1.4.9
 SoundFile==0.10.3.post1
 streamlit==1.1.0
-torch==1.8.1
-torchvision==0.9.1
 tqdm==4.62.3
 transformers==4.10.3
 pydub==0.25.1
