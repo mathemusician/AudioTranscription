@@ -103,6 +103,7 @@ def split_word_list(decoded, word_start, word_end):
     old_word_list = deepcopy(word_list)
 
     # Make sure length of words are the same
+    st.write(word_list, word_start)
     assert len(old_word_list) == len(word_list)
     word_list, word_start, word_end = split_by_words(
         word_list=word_list, word_start=word_start, word_end=word_end
