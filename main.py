@@ -22,7 +22,7 @@ from flash.audio import SpeechRecognition, SpeechRecognitionData
 
 
 #@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
-@st.cache(allow_output_mutation=True)
+@st.experimental_singleton
 def model_and_processor():
     # load model and processor once
     backbone = "facebook/wav2vec2-base-960h"
