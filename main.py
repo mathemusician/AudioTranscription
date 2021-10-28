@@ -172,7 +172,7 @@ def main():
                 data=text,
                 file_name=f"{project_name}.fcpxml",
             )
-        except Error as e:
+        except Exception as e:
             st.write(e)
             download_data(file_bytes)
     
