@@ -20,6 +20,9 @@ from flash.audio import SpeechRecognition, SpeechRecognitionData
 #from data import SpeechRecognitionData
 # from transformers import Wav2Vec2
 
+# stop multiprocessing
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 #@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
 @st.experimental_singleton
