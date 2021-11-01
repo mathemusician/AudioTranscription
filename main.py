@@ -28,7 +28,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 @st.experimental_singleton
 def model_and_processor():
     # load model and processor once
-    backbone = "patrickvonplaten/wav2vec2_tiny_random_robust" # "facebook/wav2vec2-base-960h"
+    backbone = "facebook/wav2vec2-base-960h" # "facebook/wav2vec2-base-960h" #patrickvonplaten/wav2vec2_tiny_random_robust
     model = SpeechRecognition(backbone)  # Wav2Vec2ForCTC.from_pretrained(backbone)
     processor = Wav2Vec2Processor.from_pretrained(backbone)
     return model, processor
