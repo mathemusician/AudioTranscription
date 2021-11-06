@@ -135,3 +135,7 @@ lightning_logs/*
 *.wav
 *.fcpxml
 *.pickle
+*.mp4
+*.gif
+*.mov
+*launch.json
