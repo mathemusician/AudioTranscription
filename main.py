@@ -11,20 +11,19 @@ from pathlib import Path
 from copy import deepcopy
 import scipy.signal as sps
 from pydub import AudioSegment
+from multipage import MultiPage
 from consolidate import time_decoder
 from split_texts import split_by_words
 from make_xml import make_xml_from_words
 from transformers import Wav2Vec2Processor
 from flash.core.data.data_source import DefaultDataKeys
 from flash.audio import SpeechRecognition, SpeechRecognitionData
-#from data import SpeechRecognitionData
-# from transformers import Wav2Vec2
+
 
 # stop multiprocessing
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-#@st.cache(hash_funcs={"MyUnhashableClass": lambda _: None})
 @st.experimental_singleton
 def model_and_processor():
     # load model and processor once
@@ -123,20 +122,6 @@ def parse_text_box():
     pass
 
 
-def make_fcpxml(word_start, word_end, word_list, wcps):
-    """
-    with open("test.fcpxml", "w") as file_handler:
-        file_handler.write(
-            make_xml_from_words(
-                word_start=word_start,
-                word_end=word_end,
-                word_list=word_list,
-                wcps=wcps,
-            )
-        )
-    """
-
-
 def process_audio(audio_numpy):
     decoded, batch_decoded = transcribe_audio(audio_numpy)
     word_start, word_end = time_decoder(decoded, batch_decoded)
@@ -148,21 +133,21 @@ def process_audio(audio_numpy):
     word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
 
     # Make fcpxml
-    # return make_fcpxml(word_start, word_end, word_list, wcps)
-    return make_xml_from_words(
+    fcpxml = make_xml_from_words(
         word_start=word_start,
         word_end=word_end,
         word_list=word_list,
         wcps=wcps,
-    ), word_list
+    )
+
+    return fcpxml, word_list
 
 
-def main():
-    st.title("Audio Transcription")
-    
+def audio_file_upload():
     project_name = st.text_input("Project Name:", value="Project Name")
 
     uploaded_file = st.file_uploader("Choose an audio file")
+
 
     if uploaded_file is not None:
         # Convert the file to numpy.
@@ -178,11 +163,21 @@ def main():
                 data=text,
                 file_name=f"{project_name}.fcpxml",
             )
+        
         except Exception as e:
             st.write(e)
             download_data(file_bytes)
+
+
+def main():
+    app = MultiPage()
+
+    st.title("Audio Transcription")
+
+    app.add_page("Upload Audio", audio_file_upload)
+    
+    
     
 
 if __name__ == "__main__":
-    # parse_text_box()
     main()
