@@ -163,7 +163,7 @@ def audio_file_upload():
                 data=text,
                 file_name=f"{project_name}.fcpxml",
             )
-        
+
         except Exception as e:
             st.write(e)
             download_data(file_bytes)
@@ -175,6 +175,8 @@ def main():
     st.title("Audio Transcription")
 
     app.add_page("Upload Audio", audio_file_upload)
+
+    app.run()
     
     
     
