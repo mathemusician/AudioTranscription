@@ -54,8 +54,14 @@ def download_data(data):
     st.markdown(href, unsafe_allow_html=True)
 
 
-def convert_audio_file(audio_bytes) -> None:
+def resample_numpy(audio_numpy, sample_rate):
     new_rate = 16000
+    number_of_samples = round(len(audio_numpy) * float(new_rate) / sample_rate)
+    resampled_audio = sps.resample(audio_numpy, number_of_samples)
+    return resampled_audio
+
+
+def convert_audio_file(audio_bytes) -> None:
     try:
         clip, sample_rate = soundfile.read(audio_bytes)
     except RuntimeError:
@@ -63,8 +69,7 @@ def convert_audio_file(audio_bytes) -> None:
         audio_object = AudioSegment.from_file_using_temporary_files(audio_bytes)
         clip = np.array(audio_object.get_array_of_samples())
         sample_rate = audio_object.frame_rate
-    number_of_samples = round(len(clip) * float(new_rate) / sample_rate)
-    resampled_audio = sps.resample(clip, number_of_samples)
+    resampled_audio = resample_numpy(clip, sample_rate)
     return resampled_audio
 
 
@@ -136,7 +141,7 @@ def process_audio(audio_numpy):
     decoded, batch_decoded = transcribe_audio(audio_numpy)
     word_start, word_end = time_decoder(decoded, batch_decoded)
 
-    length_of_media = librosa.get_duration(y=audio_numpy, sr=16000)  # 12.11 seconds
+    length_of_media = librosa.get_duration(y=audio_numpy, sr=16000)
     wcps = len(batch_decoded) / length_of_media
 
     # Make word list
