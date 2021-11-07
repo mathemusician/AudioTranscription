@@ -11,3 +11,4 @@ streamlit==1.1.0
 tqdm==4.62.3
 transformers==4.10.3
 pydub==0.25.1
+gdown==3.14.0
