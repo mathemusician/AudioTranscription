@@ -205,28 +205,26 @@ def demo_video_upload():
 
     # Make word list
     word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
-    word_start = [i / wcps for i in word_start]
-    word_end = [i / wcps for i in word_end]
 
-
-    text_clips = []
-    for text, word_start, word_end in zip(word_list, word_start, word_end):
-        duration = word_start - word_end
-        text_clips.append(((word_start, word_end), text))  # 2
-
-    subtitles = SubtitlesClip(text_clips, text_clip) # 2
-
-    result = CompositeVideoClip([video, subtitles.set_pos(("center", "bottom"))]) # 2
-
-
-    result.write_videofile(
-        "output.mp4",
-        fps=video.fps,
-        temp_audiofile="temp-audio.m4a",
-        remove_temp=True,
-        codec="libx264",
-        audio_codec="aac",
+    fcpxml_func = partial(make_xml_from_words,
+        word_start=word_start,
+        word_end=word_end,
+        wcps=wcps,
     )
+
+    new_text = st.text_area('Text', value='\n'.join(word_list))
+    new_word_list = new_text.splitlines()
+
+    if len(new_word_list) == len(word_list):
+        text = fcpxml_func(word_list=new_word_list)
+        
+        btn = st.download_button(
+            label="Download FCPX project file",
+            data=text,
+            file_name=f"{project_name}.fcpxml",
+        )
+
+
 
 def demo_audio_upload():
     pass
