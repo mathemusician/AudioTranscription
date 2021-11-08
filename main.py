@@ -280,7 +280,7 @@ def video_upload():
             )
 
 
-def audio_upload():
+def audio_upload(project_name, uploaded_file):
         # Convert the file to numpy.
         file_bytes = io.BytesIO(uploaded_file.read())
         
