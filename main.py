@@ -4,6 +4,7 @@ import gdown
 import base64
 import librosa
 import difflib
+import tempfile
 import soundfile
 import numpy as np
 import pickle as pl
@@ -233,43 +234,47 @@ def video_upload(project_name, uploaded_file):
 
     # Convert the file to numpy.
     video_bytes = io.BytesIO(uploaded_file.read())
-    # video_bytes = video_file.read()
+    
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        video_path = tmp_file.name
+        fp = Path(video_path)
+        fp.write_bytes(uploaded_file.getvalue())
 
-    st.video(video_bytes)
+        st.video(video_bytes)
 
-    video = VideoFileClip(video_path)
+        video = VideoFileClip(video_path)
 
-    audio = video.audio
-    duration = video.duration  # presented as seconds, float
-    # note video.fps != audio.fps
+        audio = video.audio
+        duration = video.duration  # presented as seconds, float
+        # note video.fps != audio.fps
 
-    new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
+        new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
 
-    decoded, batch_decoded = transcribe_audio(new_audio)
-    word_start, word_end = time_decoder(decoded, batch_decoded)
+        decoded, batch_decoded = transcribe_audio(new_audio)
+        word_start, word_end = time_decoder(decoded, batch_decoded)
 
-    length_of_media = video.duration
-    wcps = len(batch_decoded) / length_of_media
+        length_of_media = video.duration
+        wcps = len(batch_decoded) / length_of_media
 
-    # Make word list
-    word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
-    fcpxml_func = partial(make_xml_from_words,
-        word_start=word_start,
-        word_end=word_end,
-        wcps=wcps,
-    )
-
-    new_text = st.text_area('Text', value='\n'.join(word_list))
-    new_word_list = new_text.splitlines()
-
-    if len(new_word_list) == len(word_list):
-        text = fcpxml_func(word_list=new_word_list)
-        
-        btn = st.download_button(
-            label="Download FCPX project file",
-            data=text,
-            file_name=f"{project_name}.fcpxml",
+        # Make word list
+        word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
+        fcpxml_func = partial(make_xml_from_words,
+            word_start=word_start,
+            word_end=word_end,
+            wcps=wcps,
         )
+
+        new_text = st.text_area('Text', value='\n'.join(word_list))
+        new_word_list = new_text.splitlines()
+
+        if len(new_word_list) == len(word_list):
+            text = fcpxml_func(word_list=new_word_list)
+            
+            btn = st.download_button(
+                label="Download FCPX project file",
+                data=text,
+                file_name=f"{project_name}.fcpxml",
+            )
 
 
 def audio_upload(project_name, uploaded_file):
@@ -301,7 +306,7 @@ def audio_upload(project_name, uploaded_file):
 def main():
     project_name = st.text_input("Project Name:", value="Project Name")
 
-    uploaded_file = st.file_uploader("Choose an audio file")
+    uploaded_file = st.file_uploader("Choose an audio/video file")
 
     if uploaded_file is not None:
         video_suffix_list = ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'avi', 'mov', 'qt',
