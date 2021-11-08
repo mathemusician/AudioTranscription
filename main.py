@@ -230,7 +230,53 @@ def demo_audio():
     pass
 
 def video_upload():
-    pass
+    project_name = st.text_input("Project Name:", value="Project Name")
+
+    uploaded_file = st.file_uploader("Choose an audio file")
+
+
+    if uploaded_file is not None:
+        # Convert the file to numpy.
+        video_bytes = io.BytesIO(uploaded_file.read())
+        video_bytes = video_file.read()
+
+        st.video(video_bytes)
+
+        video = VideoFileClip(video_path)
+
+        audio = video.audio
+        duration = video.duration  # presented as seconds, float
+        # note video.fps != audio.fps
+
+        new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
+
+
+        decoded, batch_decoded = transcribe_audio(new_audio)
+        word_start, word_end = time_decoder(decoded, batch_decoded)
+
+        length_of_media = video.duration
+        wcps = len(batch_decoded) / length_of_media
+
+        # Make word list
+        word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
+
+        fcpxml_func = partial(make_xml_from_words,
+            word_start=word_start,
+            word_end=word_end,
+            wcps=wcps,
+        )
+
+        new_text = st.text_area('Text', value='\n'.join(word_list))
+        new_word_list = new_text.splitlines()
+
+        if len(new_word_list) == len(word_list):
+            text = fcpxml_func(word_list=new_word_list)
+            
+            btn = st.download_button(
+                label="Download FCPX project file",
+                data=text,
+                file_name=f"{project_name}.fcpxml",
+            )
 
 
 def audio_upload():
@@ -271,6 +317,7 @@ def main():
     st.title("Audio Transcription")
 
     app.add_page("Demo Video", demo_video)
+    app.add_page("Video Upload", video_upload)
     app.add_page("Upload Audio", audio_upload)
     
     app.run()
