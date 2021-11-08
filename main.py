@@ -229,55 +229,47 @@ def demo_video(project_name):
 def demo_audio():
     pass
 
-def video_upload():
-    project_name = st.text_input("Project Name:", value="Project Name")
+def video_upload(project_name, uploaded_file):
 
-    uploaded_file = st.file_uploader("Choose an audio file")
+    # Convert the file to numpy.
+    video_bytes = io.BytesIO(uploaded_file.read())
+    # video_bytes = video_file.read()
 
+    st.video(video_bytes)
 
-    if uploaded_file is not None:
-        st.write("1")
-        # Convert the file to numpy.
-        video_bytes = io.BytesIO(uploaded_file.read())
-        # video_bytes = video_file.read()
+    video = VideoFileClip(video_path)
 
-        st.video(video_bytes)
+    audio = video.audio
+    duration = video.duration  # presented as seconds, float
+    # note video.fps != audio.fps
 
-        video = VideoFileClip(video_path)
+    new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
 
-        audio = video.audio
-        duration = video.duration  # presented as seconds, float
-        # note video.fps != audio.fps
+    decoded, batch_decoded = transcribe_audio(new_audio)
+    word_start, word_end = time_decoder(decoded, batch_decoded)
 
-        new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
-        st.write("2")
+    length_of_media = video.duration
+    wcps = len(batch_decoded) / length_of_media
 
-        decoded, batch_decoded = transcribe_audio(new_audio)
-        word_start, word_end = time_decoder(decoded, batch_decoded)
+    # Make word list
+    word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
+    fcpxml_func = partial(make_xml_from_words,
+        word_start=word_start,
+        word_end=word_end,
+        wcps=wcps,
+    )
 
-        length_of_media = video.duration
-        wcps = len(batch_decoded) / length_of_media
+    new_text = st.text_area('Text', value='\n'.join(word_list))
+    new_word_list = new_text.splitlines()
 
-        # Make word list
-        word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
-        st.write("3")
-        fcpxml_func = partial(make_xml_from_words,
-            word_start=word_start,
-            word_end=word_end,
-            wcps=wcps,
+    if len(new_word_list) == len(word_list):
+        text = fcpxml_func(word_list=new_word_list)
+        
+        btn = st.download_button(
+            label="Download FCPX project file",
+            data=text,
+            file_name=f"{project_name}.fcpxml",
         )
-
-        new_text = st.text_area('Text', value='\n'.join(word_list))
-        new_word_list = new_text.splitlines()
-
-        if len(new_word_list) == len(word_list):
-            text = fcpxml_func(word_list=new_word_list)
-            
-            btn = st.download_button(
-                label="Download FCPX project file",
-                data=text,
-                file_name=f"{project_name}.fcpxml",
-            )
 
 
 def audio_upload(project_name, uploaded_file):
@@ -311,12 +303,18 @@ def main():
 
     uploaded_file = st.file_uploader("Choose an audio file")
 
-
     if uploaded_file is not None:
-        try:
-            audio_upload(project_name, uploaded_file)
-        except Exception as e:
-            st.write(e)
+        video_suffix_list = ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'avi', 'mov', 'qt',
+                             'wmv', 'amv', 'm4v', 'svi', 'f4v']
+
+        if uploaded_file.name.split('.')[-1].lower() in video_suffix_list:
+            video_upload(project_name, uploaded_file)
+        else:
+            try:
+                audio_upload(project_name, uploaded_file)
+            except Exception as e:
+                st.write(e)
+
     else:
         demo_video(project_name)
     
