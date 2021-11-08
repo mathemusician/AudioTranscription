@@ -168,7 +168,7 @@ def process_audio(audio_numpy):
     return fcpxml_func, word_list
 
 
-def demo_video_upload():
+def demo_video():
     project_name = st.text_input("Project Name:", value="Project Name")
 
     cwd = Path(".")
@@ -226,7 +226,7 @@ def demo_video_upload():
 
 
 
-def demo_audio_upload():
+def demo_audio():
     pass
 
 def video_upload():
@@ -270,7 +270,7 @@ def main():
 
     st.title("Audio Transcription")
 
-    app.add_page("Demo Video Upload", demo_video_upload)
+    app.add_page("Demo Video", demo_video)
     app.add_page("Upload Audio", audio_upload)
     
     app.run()
