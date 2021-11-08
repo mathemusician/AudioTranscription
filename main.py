@@ -171,7 +171,7 @@ def demo_video(project_name):
     # project_name = st.text_input("Project Name:", value="Project Name")
 
     cwd = Path(".")
-    st.title("Audio Transcription")
+    st.title("Demo Audio Transcription")
 
     file_finder = cwd.glob("*.mov")
     list_of_vids = [str(i) for i in file_finder]
@@ -211,7 +211,7 @@ def demo_video(project_name):
         wcps=wcps,
     )
 
-    new_text = st.text_area('Text', value='\n'.join(word_list))
+    new_text = st.text_area('Transcription Text', value='\n'.join(word_list))
     new_word_list = new_text.splitlines()
 
     if len(new_word_list) == len(word_list):
