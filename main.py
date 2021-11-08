@@ -236,6 +236,7 @@ def video_upload():
 
 
     if uploaded_file is not None:
+        st.write("1")
         # Convert the file to numpy.
         video_bytes = io.BytesIO(uploaded_file.read())
         # video_bytes = video_file.read()
@@ -249,7 +250,7 @@ def video_upload():
         # note video.fps != audio.fps
 
         new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
-
+        st.write("2")
 
         decoded, batch_decoded = transcribe_audio(new_audio)
         word_start, word_end = time_decoder(decoded, batch_decoded)
@@ -259,7 +260,7 @@ def video_upload():
 
         # Make word list
         word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
-
+        st.write("3")
         fcpxml_func = partial(make_xml_from_words,
             word_start=word_start,
             word_end=word_end,
