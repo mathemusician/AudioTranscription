@@ -168,8 +168,8 @@ def process_audio(audio_numpy):
     return fcpxml_func, word_list
 
 
-def demo_video():
-    project_name = st.text_input("Project Name:", value="Project Name")
+def demo_video(project_name):
+    # project_name = st.text_input("Project Name:", value="Project Name")
 
     cwd = Path(".")
     st.title("Audio Transcription")
@@ -318,7 +318,7 @@ def main():
         except Exception as e:
             st.write(e)
     else:
-        demo_video()
+        demo_video(project_name)
     
     
     
