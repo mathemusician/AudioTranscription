@@ -111,7 +111,6 @@ def split_word_list(decoded, word_start, word_end):
     old_word_list = deepcopy(word_list)
 
     # Make sure length of words are the same
-    st.write(word_list, word_start)
     assert len(old_word_list) == len(word_list)
     word_list, word_start, word_end = split_by_words(
         word_list=word_list, word_start=word_start, word_end=word_end
@@ -170,12 +169,13 @@ def process_audio(audio_numpy):
 
 
 def demo_video_upload():
+    project_name = st.text_input("Project Name:", value="Project Name")
+
     cwd = Path(".")
     st.title("Audio Transcription")
 
     file_finder = cwd.glob("*.mov")
     list_of_vids = [str(i) for i in file_finder]
-    st.write(list_of_vids)
 
     if "Success4.mov" not in list_of_vids:
         url = "https://drive.google.com/uc?id=1kUO0dKTsq4E2rFH1_JehUZC23giwVtY3"
