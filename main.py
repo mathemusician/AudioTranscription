@@ -3,7 +3,6 @@ import torch
 import gdown
 import base64
 import librosa
-import difflib
 import tempfile
 import soundfile
 import numpy as np
@@ -14,15 +13,14 @@ from copy import deepcopy
 import scipy.signal as sps
 from functools import partial
 from pydub import AudioSegment
-from multipage import MultiPage
 from consolidate import time_decoder
 from split_texts import split_by_words
 from make_xml import make_xml_from_words
 from transformers import Wav2Vec2Processor
+from moviepy.editor import VideoFileClip, TextClip
 from moviepy.video.tools.subtitles import SubtitlesClip
 from flash.core.data.data_source import DefaultDataKeys
 from flash.audio import SpeechRecognition, SpeechRecognitionData
-from moviepy.editor import VideoFileClip, TextClip, CompositeVideoClip
 
 
 # stop multiprocessing
