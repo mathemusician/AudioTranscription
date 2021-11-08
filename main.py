@@ -238,7 +238,7 @@ def video_upload():
     if uploaded_file is not None:
         # Convert the file to numpy.
         video_bytes = io.BytesIO(uploaded_file.read())
-        video_bytes = video_file.read()
+        # video_bytes = video_file.read()
 
         st.video(video_bytes)
 
