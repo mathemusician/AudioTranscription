@@ -171,7 +171,7 @@ def demo_video(project_name):
     # project_name = st.text_input("Project Name:", value="Project Name")
 
     cwd = Path(".")
-    st.title("Demo Audio Transcription")
+    st.title("Video Transcription")
 
     file_finder = cwd.glob("*.mov")
     list_of_vids = [str(i) for i in file_finder]
