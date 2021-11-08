@@ -281,12 +281,6 @@ def video_upload():
 
 
 def audio_upload():
-    project_name = st.text_input("Project Name:", value="Project Name")
-
-    uploaded_file = st.file_uploader("Choose an audio file")
-
-
-    if uploaded_file is not None:
         # Convert the file to numpy.
         file_bytes = io.BytesIO(uploaded_file.read())
         
@@ -313,15 +307,18 @@ def audio_upload():
 
 
 def main():
-    app = MultiPage()
+    project_name = st.text_input("Project Name:", value="Project Name")
 
-    st.title("Audio Transcription")
+    uploaded_file = st.file_uploader("Choose an audio file")
 
-    app.add_page("Demo Video", demo_video)
-    app.add_page("Video Upload", video_upload)
-    app.add_page("Upload Audio", audio_upload)
-    
-    app.run()
+
+    if uploaded_file is not None:
+        try:
+            audio_upload(project_name, uploaded_file)
+        except Exception as e:
+            st.write(e)
+    else:
+        demo_video()
     
     
     
