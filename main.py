@@ -241,9 +241,13 @@ def demo_video(project_name):
     new_text = st.text_area("Transcription Text", value="\n".join(word_list))
     new_word_list = new_text.splitlines()
 
+    # convert word chunks into frames
+    word_start_frames = [int(i/wcps*video.fps) for i in word_start]
+    word_end_frames = [int(i/wcps*video.fps) for i in word_end]
+
     temp_list = []
     index = 0
-    for text, start, end in zip(new_word_list, word_start, word_end):
+    for text, start, end in zip(new_word_list, word_start_frames, word_end_frames):
         # check if space
         if start - index > 1:
             space_duration = start - index
