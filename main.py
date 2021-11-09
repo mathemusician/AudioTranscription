@@ -180,7 +180,7 @@ def process_audio(audio_numpy):
     return partial_fcpxml, word_list
 
 
-def add_captions(word_generator, frame):
+def add_captions(frame, word_generator):
     cv2.putText(
         frame,
         next(word_generator),
