@@ -205,7 +205,7 @@ def video_upload(project_name, uploaded_file=None, demo=False):
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
         if demo == True:
             cwd = Path(".")
-            st.title("Video Transcription")
+            st.title("Before")
 
             file_finder = cwd.glob("*.mov")
             list_of_vids = [str(i) for i in file_finder]
@@ -278,6 +278,7 @@ def video_upload(project_name, uploaded_file=None, demo=False):
             out_video = video.fl_image(partial_captions)
             video_file_name = "temp.mp4"
             out_video.write_videofile(video_file_name, codec="libx264", fps=video.fps)
+            st.title("After")
             st.video(video_file_name)
 
             text = partial_fcpxml(word_list=new_word_list)
