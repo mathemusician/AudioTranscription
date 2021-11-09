@@ -194,110 +194,35 @@ def add_captions(frame, word_generator):
     return frame
 
 
-def demo_video(project_name):
-    # project_name = st.text_input("Project Name:", value="Project Name")
-
-    cwd = Path(".")
-    st.title("Video Transcription")
-
-    file_finder = cwd.glob("*.mov")
-    list_of_vids = [str(i) for i in file_finder]
-
-    if "Success4.mov" not in list_of_vids:
-        url = "https://drive.google.com/uc?id=1kUO0dKTsq4E2rFH1_JehUZC23giwVtY3"
-        output = "Success4.mov"
-        gdown.download(url, output, quiet=False)
-
-    video_path = "Success4.mov"
-    video_file = open(video_path, "rb")
-    video_bytes = video_file.read()
-
-    st.video(video_bytes)
-
-    video = VideoFileClip(video_path)
-
-    audio = video.audio
-    duration = video.duration  # presented as seconds, float
-    # note video.fps != audio.fps
-
-    new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
-
-    decoded, batch_decoded = transcribe_audio(new_audio)
-    word_start, word_end = time_decoder(decoded, batch_decoded)
-
-    length_of_media = video.duration
-    wcps = len(batch_decoded) / length_of_media
-
-    # Make word list
-    word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
-
-    partial_fcpxml = partial(
-        make_xml_from_words,
-        word_start=word_start,
-        word_end=word_end,
-        wcps=wcps,
-    )
-
-    new_text = st.text_area("Transcription Text", value="\n".join(word_list))
-    new_word_list = new_text.splitlines()
-
-    # convert word chunks into frames
-    word_start_frames = [int(i/wcps*video.fps) for i in word_start]
-    word_end_frames = [int(i/wcps*video.fps) for i in word_end]
-
-    temp_list = []
-    index = 0
-    for text, start, end in zip(new_word_list, word_start_frames, word_end_frames):
-        # check if space
-        if start - index > 1:
-            space_duration = start - index
-            space_duration = [""] * space_duration
-        else:
-            space_duration = []
-
-        duration = end - start + 1
-        
-        text_duration = [text]*duration
-        
-        temp_list += space_duration + text_duration
-        index = end
-
-    word_gen = word_generator(temp_list)
-    partial_captions = partial(add_captions, word_generator=word_gen)
-
-    if len(new_word_list) == len(word_list):
-        out_video = video.fl_image(partial_captions)
-        video_file_name = "temp.mp4"
-        out_video.write_videofile(video_file_name, codec="libx264", fps=video.fps)
-        st.video(video_file_name)
-
-        text = partial_fcpxml(word_list=new_word_list)
-
-        with open(video_file_name, 'rb') as file_handler:
-            btn = st.download_button(
-                label="Download Video file",
-                data=file_handler,
-                file_name=f"{project_name}.mp4",
-            )
-        
-        btn = st.download_button(
-            label="Download FCPX project file",
-            data=text,
-            file_name=f"{project_name}.fcpxml",
-        )
-
-
-def video_upload(project_name, uploaded_file):
+def video_upload(project_name, uploaded_file=None, demo=False):
 
     # Convert the file to numpy.
-    video_bytes = io.BytesIO(uploaded_file.read())
+    if uploaded_file != None:
+        video_bytes = io.BytesIO(uploaded_file.read())
+    else:
+        video_bytes = None
 
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-        video_path = tmp_file.name
-        fp = Path(video_path)
-        fp.write_bytes(uploaded_file.getvalue())
+        if demo == True:
+            cwd = Path(".")
+            st.title("Video Transcription")
 
-        st.video(video_bytes)
+            file_finder = cwd.glob("*.mov")
+            list_of_vids = [str(i) for i in file_finder]
+
+            if "Success4.mov" not in list_of_vids:
+                url = "https://drive.google.com/uc?id=1kUO0dKTsq4E2rFH1_JehUZC23giwVtY3"
+                output = "Success4.mov"
+                gdown.download(url, output, quiet=False)
+
+            video_path = "Success4.mov"
+            st.video(video_path)
+
+        else:
+            video_path = tmp_file.name
+            fp = Path(video_path)
+            fp.write_bytes(uploaded_file.getvalue())
+            st.video(video_bytes)
 
         video = VideoFileClip(video_path)
 
@@ -326,8 +251,8 @@ def video_upload(project_name, uploaded_file):
         new_word_list = new_text.splitlines()
 
         # convert word chunks into frames
-        word_start_frames = [int(i/wcps*video.fps) for i in word_start]
-        word_end_frames = [int(i/wcps*video.fps) for i in word_end]
+        word_start_frames = [int(i / wcps * video.fps) for i in word_start]
+        word_end_frames = [int(i / wcps * video.fps) for i in word_end]
 
         temp_list = []
         index = 0
@@ -340,9 +265,9 @@ def video_upload(project_name, uploaded_file):
                 space_duration = []
 
             duration = end - start + 1
-            
-            text_duration = [text]*duration
-            
+
+            text_duration = [text] * duration
+
             temp_list += space_duration + text_duration
             index = end
 
@@ -351,10 +276,18 @@ def video_upload(project_name, uploaded_file):
 
         if len(new_word_list) == len(word_list):
             out_video = video.fl_image(partial_captions)
-            out_video.write_videofile("temp.mp4", codec="libx264", fps=video.fps)
-            st.video("temp.mp4")
+            video_file_name = "temp.mp4"
+            out_video.write_videofile(video_file_name, codec="libx264", fps=video.fps)
+            st.video(video_file_name)
 
             text = partial_fcpxml(word_list=new_word_list)
+
+            with open(video_file_name, "rb") as file_handler:
+                btn = st.download_button(
+                    label="Download Video file",
+                    data=file_handler,
+                    file_name=f"{project_name}.mp4",
+                )
 
             btn = st.download_button(
                 label="Download FCPX project file",
@@ -421,7 +354,7 @@ def main():
                 st.write(e)
 
     else:
-        demo_video(project_name)
+        video_upload(project_name, demo=True)
 
 
 if __name__ == "__main__":
