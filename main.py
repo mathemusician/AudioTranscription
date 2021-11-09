@@ -1,4 +1,5 @@
 import io
+import cv2
 import torch
 import gdown
 import base64
@@ -25,12 +26,14 @@ from flash.audio import SpeechRecognition, SpeechRecognitionData
 
 # stop multiprocessing
 import os
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 
 @st.experimental_singleton
 def model_and_processor():
     # load model and processor once
-    backbone = "facebook/wav2vec2-base-960h" # "facebook/wav2vec2-base-960h" #patrickvonplaten/wav2vec2_tiny_random_robust
+    backbone = "facebook/wav2vec2-base-960h"  # "facebook/wav2vec2-base-960h" #patrickvonplaten/wav2vec2_tiny_random_robust
     model = SpeechRecognition(backbone)  # Wav2Vec2ForCTC.from_pretrained(backbone)
     processor = Wav2Vec2Processor.from_pretrained(backbone)
     return model, processor
@@ -124,27 +127,36 @@ def parse_text_box():
     pass
 
 
+def word_generator(word_list):
+    # skip first frame
+    yield ""
+    for word in word_list:
+        yield word
+    # return nothing for the rest of the frames
+    while True:
+        yield ""
+
+
 def text_clip(text: str):
-        """
-        Return a description string on the bottom-left of the video
+    """
+    Return a description string on the bottom-left of the video
 
-        Args:
-                    text (str): Text to show
+    Args:
+                text (str): Text to show
 
-        Returns:
-                    moviepy.editor.TextClip: A instance of a TextClip
-        """
-        my_text = (
-            TextClip(text, font="Helvetica", fontsize=50, color="white")
-            .set_position(("center", "center"))
-        )
+    Returns:
+                moviepy.editor.TextClip: A instance of a TextClip
+    """
+    my_text = TextClip(text, font="Helvetica", fontsize=50, color="white").set_position(
+        ("center", "center")
+    )
 
-        return my_text.on_color(
-            size=(my_text.w, my_text.h),
-            color=(0, 0, 0),
-            pos=("center", "center"),
-            col_opacity=0.6,
-        )
+    return my_text.on_color(
+        size=(my_text.w, my_text.h),
+        color=(0, 0, 0),
+        pos=("center", "center"),
+        col_opacity=0.6,
+    )
 
 
 def process_audio(audio_numpy):
@@ -158,13 +170,28 @@ def process_audio(audio_numpy):
     word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
 
     # Make fcpxml
-    fcpxml_func = partial(make_xml_from_words,
+    partial_fcpxml = partial(
+        make_xml_from_words,
         word_start=word_start,
         word_end=word_end,
         wcps=wcps,
     )
 
-    return fcpxml_func, word_list
+    return partial_fcpxml, word_list
+
+
+def add_captions(word_generator, frame):
+    cv2.putText(
+        frame,
+        next(word_generator),
+        (0, 200),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        1,
+        (255, 255, 255),
+        3,
+        cv2.LINE_AA,
+    )
+    return frame
 
 
 def demo_video(project_name):
@@ -180,7 +207,7 @@ def demo_video(project_name):
         url = "https://drive.google.com/uc?id=1kUO0dKTsq4E2rFH1_JehUZC23giwVtY3"
         output = "Success4.mov"
         gdown.download(url, output, quiet=False)
-    
+
     video_path = "Success4.mov"
     video_file = open(video_path, "rb")
     video_bytes = video_file.read()
@@ -195,7 +222,6 @@ def demo_video(project_name):
 
     new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
 
-
     decoded, batch_decoded = transcribe_audio(new_audio)
     word_start, word_end = time_decoder(decoded, batch_decoded)
 
@@ -205,18 +231,43 @@ def demo_video(project_name):
     # Make word list
     word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
 
-    fcpxml_func = partial(make_xml_from_words,
+    partial_fcpxml = partial(
+        make_xml_from_words,
         word_start=word_start,
         word_end=word_end,
         wcps=wcps,
     )
 
-    new_text = st.text_area('Transcription Text', value='\n'.join(word_list))
+    new_text = st.text_area("Transcription Text", value="\n".join(word_list))
     new_word_list = new_text.splitlines()
 
-    if len(new_word_list) == len(word_list):
-        text = fcpxml_func(word_list=new_word_list)
+    temp_list = []
+    index = 0
+    for text, start, end in zip(new_word_list, word_start, word_end):
+        # check if space
+        if start - index > 1:
+            space_duration = start - index
+            word_duration = [""] * space_duration
+        else:
+            word_duration = []
+
+        duration = end - start + 1
         
+        word_duration.append([text]*duration)
+        
+        temp_list.append(*word_duration)
+        index = end
+
+    word_gen = word_generator(temp_list)
+    partial_captions = partial(add_captions, word_generator=word_gen)
+
+    if len(new_word_list) == len(word_list):
+        out_video = video.fl_image(partial_captions)
+        out_video.write_videofile("temp.mp4", codec="libx264")
+        st.video("temp.mp4")
+
+        text = partial_fcpxml(word_list=new_word_list)
+
         btn = st.download_button(
             label="Download FCPX project file",
             data=text,
@@ -224,15 +275,11 @@ def demo_video(project_name):
         )
 
 
-
-def demo_audio():
-    pass
-
 def video_upload(project_name, uploaded_file):
 
     # Convert the file to numpy.
     video_bytes = io.BytesIO(uploaded_file.read())
-    
+
     with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
         video_path = tmp_file.name
         fp = Path(video_path)
@@ -256,18 +303,19 @@ def video_upload(project_name, uploaded_file):
 
         # Make word list
         word_list, word_start, word_end = split_word_list(decoded, word_start, word_end)
-        fcpxml_func = partial(make_xml_from_words,
+        partial_fcpxml = partial(
+            make_xml_from_words,
             word_start=word_start,
             word_end=word_end,
             wcps=wcps,
         )
 
-        new_text = st.text_area('Text', value='\n'.join(word_list))
+        new_text = st.text_area("Text", value="\n".join(word_list))
         new_word_list = new_text.splitlines()
 
         if len(new_word_list) == len(word_list):
-            text = fcpxml_func(word_list=new_word_list)
-            
+            text = partial_fcpxml(word_list=new_word_list)
+
             btn = st.download_button(
                 label="Download FCPX project file",
                 data=text,
@@ -276,41 +324,55 @@ def video_upload(project_name, uploaded_file):
 
 
 def audio_upload(project_name, uploaded_file):
-        # Convert the file to numpy.
-        file_bytes = io.BytesIO(uploaded_file.read())
-        
-        try:
-            audio_numpy = convert_audio_file(file_bytes)
-            fcpxml_func, word_list = process_audio(audio_numpy)
+    # Convert the file to numpy.
+    file_bytes = io.BytesIO(uploaded_file.read())
 
-            new_text = st.text_area('Text', value='\n'.join(word_list))
-            new_word_list = new_text.splitlines()
+    try:
+        audio_numpy = convert_audio_file(file_bytes)
+        partial_fcpxml, word_list = process_audio(audio_numpy)
 
-            if len(new_word_list) == len(word_list):
-                text = fcpxml_func(word_list=new_word_list)
-                
-                btn = st.download_button(
-                    label="Download FCPX project file",
-                    data=text,
-                    file_name=f"{project_name}.fcpxml",
-                )
+        new_text = st.text_area("Text", value="\n".join(word_list))
+        new_word_list = new_text.splitlines()
 
-        except Exception as e:
-            st.write(e)
-            download_data(file_bytes)
+        if len(new_word_list) == len(word_list):
+            text = partial_fcpxml(word_list=new_word_list)
 
+            btn = st.download_button(
+                label="Download FCPX project file",
+                data=text,
+                file_name=f"{project_name}.fcpxml",
+            )
+
+    except Exception as e:
+        st.write(e)
+        download_data(file_bytes)
 
 
 def main():
     project_name = st.text_input("Project Name:", value="Project Name")
 
-    uploaded_file = st.file_uploader("Choose an audio/video file")
+    uploaded_file = st.file_uploader("Upload audio/video file")
 
     if uploaded_file is not None:
-        video_suffix_list = ['webm', 'mkv', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'avi', 'mov', 'qt',
-                             'wmv', 'amv', 'm4v', 'svi', 'f4v']
+        video_suffix_list = [
+            "webm",
+            "mkv",
+            "flv",
+            "vob",
+            "ogv",
+            "ogg",
+            "drc",
+            "avi",
+            "mov",
+            "qt",
+            "wmv",
+            "amv",
+            "m4v",
+            "svi",
+            "f4v",
+        ]
 
-        if uploaded_file.name.split('.')[-1].lower() in video_suffix_list:
+        if uploaded_file.name.split(".")[-1].lower() in video_suffix_list:
             video_upload(project_name, uploaded_file)
         else:
             try:
@@ -320,9 +382,7 @@ def main():
 
     else:
         demo_video(project_name)
-    
-    
-    
+
 
 if __name__ == "__main__":
     main()
