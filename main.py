@@ -247,15 +247,15 @@ def demo_video(project_name):
         # check if space
         if start - index > 1:
             space_duration = start - index
-            word_duration = [""] * space_duration
+            space_duration = [""] * space_duration
         else:
-            word_duration = []
+            space_duration = []
 
         duration = end - start + 1
         
-        word_duration.append([text]*duration)
+        text_duration = [text]*duration
         
-        temp_list.append(*word_duration)
+        temp_list += space_duration + text_duration
         index = end
 
     word_gen = word_generator(temp_list)
