@@ -22,6 +22,8 @@ from moviepy.editor import VideoFileClip, TextClip
 from moviepy.video.tools.subtitles import SubtitlesClip
 from flash.core.data.data_source import DefaultDataKeys
 from flash.audio import SpeechRecognition, SpeechRecognitionData
+from math import ceil
+from tqdm import tqdm
 
 
 # stop multiprocessing
@@ -61,7 +63,7 @@ def download_data(data):
 
 def resample_numpy(audio_numpy, sample_rate):
     if sample_rate == 16000:
-        return resampled_audio
+        return audio_numpy
 
     new_rate = 16000
     number_of_samples = round(len(audio_numpy) * float(new_rate) / sample_rate)
@@ -89,31 +91,47 @@ def transcribe_audio(audio_numpy):
         pass
 
     input_ = processor(librosa.to_mono(audio_numpy))
+    input_ = input_["input_values"][0]
     
-    audio_dict = {
-        DefaultDataKeys.INPUT: input_["input_values"][0],
-        DefaultDataKeys.TARGET: "dummy target",
-        DefaultDataKeys.METADATA: {"sampling_rate": 16000},
-    }
+    audio_length = len(input_)
+    split = 148821
 
-    # predictions = model.predict([custom_datamodule._test_ds[0]])
 
-    predictions = model.predict([audio_dict])
+    audio_split = [i*split for i in range(ceil(audio_length/split))]
+    
+    audio_list = np.split(input_, np.array(audio_split))
+    
+    decoded = []
+    batch_decoded = []
+    
+    for audio in tqdm(audio_list):
+        if len(audio) == 0:
+            continue
 
-    pred_ids = torch.argmax(predictions[0].logits, dim=-1)
+        audio_dict = {
+            DefaultDataKeys.INPUT: audio,
+            DefaultDataKeys.TARGET: "dummy target",
+            DefaultDataKeys.METADATA: {"sampling_rate": 16000},
+        }
 
-    decoded = processor.decode(pred_ids)
-    batch_decoded = processor.batch_decode(pred_ids)
+        # predictions = model.predict([custom_datamodule._test_ds[0]])
+
+        predictions = model.predict([audio_dict])
+
+        pred_ids = torch.argmax(predictions[0].logits, dim=-1)
+
+        decoded.extend(processor.decode(pred_ids))
+        decoded.extend([' ']) # add space between this decoding and the next
+        batch_decoded.extend(processor.batch_decode(pred_ids))
+
+    decoded = "".join(decoded) # combine into one string
 
     return decoded, batch_decoded
 
 
 def split_word_list(decoded, word_start, word_end):
     word_list = decoded.split()
-    old_word_list = deepcopy(word_list)
-
-    # Make sure length of words are the same
-    assert len(old_word_list) == len(word_list)
+    
     word_list, word_start, word_end = split_by_words(
         word_list=word_list, word_start=word_start, word_end=word_end
     )
