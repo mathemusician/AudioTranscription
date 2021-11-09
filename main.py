@@ -305,7 +305,7 @@ def audio_upload(project_name, uploaded_file):
         audio_numpy = convert_audio_file(file_bytes)
         partial_fcpxml, word_list = process_audio(audio_numpy)
 
-        new_text = st.text_area("Text", value="\n".join(word_list))
+        new_text = st.text_area("Edit transcription text", value="\n".join(word_list))
         new_word_list = new_text.splitlines()
 
         if len(new_word_list) == len(word_list):
