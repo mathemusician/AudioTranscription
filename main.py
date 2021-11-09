@@ -263,7 +263,7 @@ def demo_video(project_name):
 
     if len(new_word_list) == len(word_list):
         out_video = video.fl_image(partial_captions)
-        out_video.write_videofile("temp.mp4", codec="libx264")
+        out_video.write_videofile("temp.mp4", codec="libx264", fps=video.fps)
         st.video("temp.mp4")
 
         text = partial_fcpxml(word_list=new_word_list)
