@@ -60,6 +60,9 @@ def download_data(data):
 
 
 def resample_numpy(audio_numpy, sample_rate):
+    if sample_rate == 16000:
+        return resampled_audio
+
     new_rate = 16000
     number_of_samples = round(len(audio_numpy) * float(new_rate) / sample_rate)
     resampled_audio = sps.resample(audio_numpy, number_of_samples)
@@ -79,10 +82,6 @@ def convert_audio_file(audio_bytes) -> None:
 
 
 def transcribe_audio(audio_numpy):
-    """custom_datamodule = SpeechRecognitionData.from_json(
-        input_fields="file", target_fields="text", test_file="text.json"
-    )"""
-    # custom_datamodule = SpeechRecognitionData.from_numpy(test_data=audio_numpy)
     try:
         if audio_numpy.shape[0] > audio_numpy.shape[1]:
             audio_numpy = audio_numpy.transpose()
@@ -90,6 +89,7 @@ def transcribe_audio(audio_numpy):
         pass
 
     input_ = processor(librosa.to_mono(audio_numpy))
+    
     audio_dict = {
         DefaultDataKeys.INPUT: input_["input_values"][0],
         DefaultDataKeys.TARGET: "dummy target",
@@ -268,7 +268,7 @@ def video_upload(project_name, uploaded_file=None, demo=False):
 
             text_duration = [text] * duration
 
-            temp_list += space_duration + text_duration
+            temp_list.extend(space_duration + text_duration)
             index = end
 
         word_gen = word_generator(temp_list)
