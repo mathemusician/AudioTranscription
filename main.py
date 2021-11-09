@@ -262,18 +262,24 @@ def demo_video(project_name):
         temp_list += space_duration + text_duration
         index = end
 
-    st.write(word_start, word_end)
-    st.write(temp_list)
     word_gen = word_generator(temp_list)
     partial_captions = partial(add_captions, word_generator=word_gen)
 
     if len(new_word_list) == len(word_list):
         out_video = video.fl_image(partial_captions)
-        out_video.write_videofile("temp.mp4", codec="libx264", fps=video.fps)
-        st.video("temp.mp4")
+        video_file_name = "temp.mp4"
+        out_video.write_videofile(video_file_name, codec="libx264", fps=video.fps)
+        st.video(video_file_name)
 
         text = partial_fcpxml(word_list=new_word_list)
 
+        with open(video_file_name, 'rb') as file_handler:
+            btn = st.download_button(
+                label="Download Video file",
+                data=file_handler,
+                file_name=f"{project_name}.mp4",
+            )
+        
         btn = st.download_button(
             label="Download FCPX project file",
             data=text,
@@ -319,7 +325,35 @@ def video_upload(project_name, uploaded_file):
         new_text = st.text_area("Text", value="\n".join(word_list))
         new_word_list = new_text.splitlines()
 
+        # convert word chunks into frames
+        word_start_frames = [int(i/wcps*video.fps) for i in word_start]
+        word_end_frames = [int(i/wcps*video.fps) for i in word_end]
+
+        temp_list = []
+        index = 0
+        for text, start, end in zip(new_word_list, word_start_frames, word_end_frames):
+            # check if space
+            if start - index > 1:
+                space_duration = start - index
+                space_duration = [""] * space_duration
+            else:
+                space_duration = []
+
+            duration = end - start + 1
+            
+            text_duration = [text]*duration
+            
+            temp_list += space_duration + text_duration
+            index = end
+
+        word_gen = word_generator(temp_list)
+        partial_captions = partial(add_captions, word_generator=word_gen)
+
         if len(new_word_list) == len(word_list):
+            out_video = video.fl_image(partial_captions)
+            out_video.write_videofile("temp.mp4", codec="libx264", fps=video.fps)
+            st.video("temp.mp4")
+
             text = partial_fcpxml(word_list=new_word_list)
 
             btn = st.download_button(
