@@ -258,6 +258,8 @@ def demo_video(project_name):
         temp_list += space_duration + text_duration
         index = end
 
+    st.write(word_start, word_end)
+    st.write(temp_list)
     word_gen = word_generator(temp_list)
     partial_captions = partial(add_captions, word_generator=word_gen)
 
