@@ -8,6 +8,8 @@ import tempfile
 import soundfile
 import numpy as np
 import pickle as pl
+from math import ceil
+from tqdm import tqdm
 import streamlit as st
 from pathlib import Path
 from copy import deepcopy
@@ -22,8 +24,6 @@ from moviepy.editor import VideoFileClip, TextClip
 from moviepy.video.tools.subtitles import SubtitlesClip
 from flash.core.data.data_source import DefaultDataKeys
 from flash.audio import SpeechRecognition, SpeechRecognitionData
-from math import ceil
-from tqdm import tqdm
 
 
 # stop multiprocessing
@@ -94,7 +94,8 @@ def transcribe_audio(audio_numpy):
     input_ = input_["input_values"][0]
     
     audio_length = len(input_)
-    split = 148821
+    # split = 148821
+    split = 78821
 
 
     audio_split = [i*split for i in range(ceil(audio_length/split))]
