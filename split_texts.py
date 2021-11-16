@@ -21,18 +21,18 @@ def split_by_words(
     new_start = []
     new_end = 0
     new_word = []
-    
+
     for index in range(num_iterations):
         index += 1
         new_start.append(next(gen_start))
         new_end = next(gen_end)
         new_word.append(next(gen_word))
-        
+
         if index % num_words == 0:
             new_word_start.append(new_start[0])
             new_word_end.append(new_end)
             new_word_list.append(" ".join(new_word))
-            
+
             # reinitialize
             new_start = []
             new_end = 0
@@ -44,12 +44,12 @@ def split_by_words(
         new_start = []
         new_end = 0
         new_word = []
-        
+
         for index in range(remainder):
             new_start.append(next(gen_start))
             new_end = next(gen_end)
             new_word.append(next(gen_word))
-        
+
         new_word_start.append(new_start[0])
         new_word_end.append(new_end)
         new_word_list.append(" ".join(new_word))
@@ -66,6 +66,7 @@ if __name__ == "__main__":
     print(A)
     A = split_by_words(["A", "B", "C", "D"], [1, 5, 10, 15], [3, 8, 11, 16])
     print(A)
-    A = split_by_words(["A", "B", "C", "D", "E"], [1, 5, 10, 15, 20], [3, 8, 11, 16, 24])
+    A = split_by_words(
+        ["A", "B", "C", "D", "E"], [1, 5, 10, 15, 20], [3, 8, 11, 16, 24]
+    )
     print(A)
-    

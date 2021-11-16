@@ -1,9 +1,9 @@
-'''
+"""
 length_of_audio:
 word_chunks: chunks of audio
 fps: usually 1/24th of a second
 wcps: num of chunks/seconds
-'''
+"""
 
 import html
 from typing import List, Union
@@ -14,7 +14,13 @@ def number_generator(num_list):
     for i in num_list:
         yield i
 
-def make_xml_from_words(word_start: List[int], word_list: List[str], wcps: Union[float, int], word_end: List[int]) -> str:
+
+def make_xml_from_words(
+    word_start: List[int],
+    word_list: List[str],
+    wcps: Union[float, int],
+    word_end: List[int],
+) -> str:
     """
     makes a fcpxml file from word chunks
     """
@@ -27,18 +33,18 @@ def make_xml_from_words(word_start: List[int], word_list: List[str], wcps: Union
         assert (next(end_gen) - next(start_gen)) > 0
 
     fps = 24
-    
+
     # convert starting chunks to fps
     temp = []
     for start_int in word_start:
-        temp.append(int(start_int/wcps*fps))
+        temp.append(int(start_int / wcps * fps))
     word_start = temp
-    
+
     # make duration list
     duration_list = []
     start_gen = number_generator(word_start)
     for end_int in word_end:
-        end_int = int(end_int/wcps*fps)
+        end_int = int(end_int / wcps * fps)
         duration_list.append(end_int - next(start_gen))
 
     text_list = []
@@ -56,7 +62,9 @@ def make_xml_from_words(word_start: List[int], word_list: List[str], wcps: Union
                     <sequence format="r0" tcStart="3600/1s" tcFormat="NDF" duration="20/1s">
                         <spine>
                             <gap start="3600/1s" name="Gap" offset="3600/1s" duration="{}/1s">
-    """.format(ceil(word_end[-1]/wcps))
+    """.format(
+        ceil(word_end[-1] / wcps)
+    )
 
     text_list.append(begin)
 
@@ -74,10 +82,13 @@ def make_xml_from_words(word_start: List[int], word_list: List[str], wcps: Union
     start_gen = number_generator(word_start)
     duration_gen = number_generator(duration_list)
     for word_index, word in enumerate(word_list):
-        start = next(start_gen) + 3600*24 # beginning always starts at 3600 seconds
+        start = next(start_gen) + 3600 * 24  # beginning always starts at 3600 seconds
         duration = next(duration_gen)
-        text_list.append(text.format(start, start, duration, word_index, html.escape(word), word_index))
-
+        text_list.append(
+            text.format(
+                start, start, duration, word_index, html.escape(word), word_index
+            )
+        )
 
     end = """                        </gap>
                         </spine>
@@ -90,19 +101,22 @@ def make_xml_from_words(word_start: List[int], word_list: List[str], wcps: Union
 
     text_list.append(end)
 
-    text = ''.join(text_list)
+    text = "".join(text_list)
 
     return text
 
 
 if __name__ == "__main__":
     wcps = 16000
-    word_start = [5*wcps, 11*wcps, 17*wcps] # seconds * word_chunks
-    word_end = [11*wcps, 17*wcps, 21*wcps]  # seconds * word_chunks
+    word_start = [5 * wcps, 11 * wcps, 17 * wcps]  # seconds * word_chunks
+    word_end = [11 * wcps, 17 * wcps, 21 * wcps]  # seconds * word_chunks
     word_list = ["A", "B", "C"]
     with open("test.fcpxml", "w") as file_handler:
-        file_handler.write(make_xml_from_words(word_start=word_start, 
-                                word_end=word_end,
-                                word_list=word_list,
-                                wcps=wcps,
-        ))
+        file_handler.write(
+            make_xml_from_words(
+                word_start=word_start,
+                word_end=word_end,
+                word_list=word_list,
+                wcps=wcps,
+            )
+        )

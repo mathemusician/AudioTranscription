@@ -35,8 +35,8 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 @st.experimental_singleton
 def model_and_processor():
     # load model and processor once
-    backbone = "facebook/wav2vec2-base-960h"  # "facebook/wav2vec2-base-960h" #patrickvonplaten/wav2vec2_tiny_random_robust
-    model = SpeechRecognition(backbone)  # Wav2Vec2ForCTC.from_pretrained(backbone)
+    backbone = "facebook/wav2vec2-base-960h"
+    model = SpeechRecognition(backbone)
     processor = Wav2Vec2Processor.from_pretrained(backbone)
     return model, processor
 
@@ -92,19 +92,18 @@ def transcribe_audio(audio_numpy):
 
     input_ = processor(librosa.to_mono(audio_numpy))
     input_ = input_["input_values"][0]
-    
+
     audio_length = len(input_)
     # split = 148821
     split = 78821
 
+    audio_split = [i * split for i in range(ceil(audio_length / split))]
 
-    audio_split = [i*split for i in range(ceil(audio_length/split))]
-    
     audio_list = np.split(input_, np.array(audio_split))
-    
+
     decoded = []
     batch_decoded = []
-    
+
     for audio in tqdm(audio_list):
         if len(audio) == 0:
             continue
@@ -122,17 +121,17 @@ def transcribe_audio(audio_numpy):
         pred_ids = torch.argmax(predictions[0].logits, dim=-1)
 
         decoded.extend(processor.decode(pred_ids))
-        decoded.extend([' ']) # add space between this decoding and the next
+        decoded.extend([" "])  # add space between this decoding and the next
         batch_decoded.extend(processor.batch_decode(pred_ids))
 
-    decoded = "".join(decoded) # combine into one string
+    decoded = "".join(decoded)  # combine into one string
 
     return decoded, batch_decoded
 
 
 def split_word_list(decoded, word_start, word_end):
     word_list = decoded.split()
-    
+
     word_list, word_start, word_end = split_by_words(
         word_list=word_list, word_start=word_start, word_end=word_end
     )
