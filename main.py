@@ -74,23 +74,36 @@ def resample_numpy(audio_numpy, sample_rate):
 def convert_audio_file(audio_bytes) -> None:
     try:
         clip, sample_rate = soundfile.read(audio_bytes)
+        # make sure the audio is the right shape
+        try:
+            if clip.shape[0] > clip.shape[1]:
+                clip = clip.transpose()
+        except IndexError:
+            pass
+        # convert to mono
+        clip = librosa.to_mono(clip)
+    
     except RuntimeError:
         audio_bytes.seek(0)
         audio_object = AudioSegment.from_file_using_temporary_files(audio_bytes)
-        clip = np.array(audio_object.get_array_of_samples())
+        
+        # convert to mono
+        if audio_object.channels == 1:
+            clip = np.array(audio_object.get_array_of_samples())
+        elif audio_object.channels > 1:
+            # convert to mono
+            channels = audio_object.split_to_mono()
+            channel_list = [np.array(i.get_array_of_samples()) for i in channels]
+            clip = np.mean(channel_list, axis=0)
+        
         sample_rate = audio_object.frame_rate
     resampled_audio = resample_numpy(clip, sample_rate)
     return resampled_audio
 
 
 def transcribe_audio(audio_numpy):
-    try:
-        if audio_numpy.shape[0] > audio_numpy.shape[1]:
-            audio_numpy = audio_numpy.transpose()
-    except IndexError:
-        pass
 
-    input_ = processor(librosa.to_mono(audio_numpy))
+    input_ = processor(audio_numpy)
     input_ = input_["input_values"][0]
 
     audio_length = len(input_)
@@ -246,7 +259,7 @@ def video_upload(project_name, uploaded_file=None, demo=False):
 
         audio = video.audio
         duration = video.duration  # presented as seconds, float
-        # note video.fps != audio.fps
+        # note: video.fps != audio.fps
 
         new_audio = resample_numpy(audio.to_soundarray(), audio.fps)
 
@@ -316,10 +329,10 @@ def video_upload(project_name, uploaded_file=None, demo=False):
 
 
 def audio_upload(project_name, uploaded_file):
-    # Convert the file to numpy.
     file_bytes = io.BytesIO(uploaded_file.read())
 
     try:
+        # Convert the file to numpy.
         audio_numpy = convert_audio_file(file_bytes)
         partial_fcpxml, word_list = process_audio(audio_numpy)
 
