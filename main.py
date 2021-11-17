@@ -222,10 +222,10 @@ def add_captions(frame, word_generator):
     cv2.putText(
         frame,
         next(word_generator),
-        (0, 200),
+        (0, 200), # x, y
         cv2.FONT_HERSHEY_SIMPLEX,
         1,
-        (255, 255, 255),
+        (255, 255, 255), # RGB
         3,
         cv2.LINE_AA,
     )
@@ -285,7 +285,7 @@ def video_upload(project_name, uploaded_file=None, demo=False):
             wcps=wcps,
         )
 
-        new_text = st.text_area("Text", value="\n".join(word_list))
+        new_text = st.text_area("Text (Edit to Change Video)", value="\n".join(word_list))
         new_word_list = new_text.splitlines()
 
         # convert word chunks into frames
