@@ -102,6 +102,13 @@ def convert_audio_file(audio_bytes) -> None:
 
 
 def transcribe_audio(audio_numpy):
+    try:
+        if audio_numpy.shape[0] > audio_numpy.shape[1]:
+            audio_numpy = audio_numpy.transpose()
+    except IndexError:
+        pass
+    # convert to mono
+    audio_numpy = librosa.to_mono(audio_numpy)
 
     input_ = processor(audio_numpy)
     input_ = input_["input_values"][0]
