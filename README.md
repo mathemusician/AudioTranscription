@@ -12,17 +12,15 @@
 
 # Desktop Version
 
-1) Download repository
+1) Download repository:
 `gh repo clone mathemusician/AudioTranscription`
 
-2) Install python requirements (Tested mainly on Python 3.9.0)
+2) Install python requirements (Tested mainly on Python 3.9.0):
 `pip install -r requirements.txt`
 
 3) Install ffmpeg
-*Using Homebrew on Mac*
-`brew install ffmpeg`
-*Windows*
-Install from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+*Using Homebrew on Mac*: `brew install ffmpeg`
+*Windows*: Install from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 
 # Implementation
 
