@@ -13,7 +13,7 @@
 # Desktop Version
 
 1) Download repository
-`Hi`
+`gh repo clone mathemusician/AudioTranscription`
 
 2) Install python requirements (Tested mainly on Python 3.9.0)
 `pip install -r requirements.txt`
