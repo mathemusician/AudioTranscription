@@ -5,7 +5,24 @@
 
 ![tutorial-gif](./static/tutorial.gif)
 
+# Web App [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/yourGitHubName/yourRepo/yourApp/)
 
+[Link to web application](https://share.streamlit.io/mathemusician/audiotranscription/main/main.py)
+
+
+# Desktop Version
+
+1) Download repository
+`Hi`
+
+2) Install python requirements (Tested mainly on Python 3.9.0)
+`pip install -r requirements.txt`
+
+3) Install ffmpeg
+*Using Homebrew on Mac*
+`brew install ffmpeg`
+*Windows*
+Install from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 
 # Implementation
 
