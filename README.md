@@ -19,8 +19,10 @@
 `pip install -r requirements.txt`
 
 3) Install ffmpeg
-*Using Homebrew on Mac*: `brew install ffmpeg`
-*Windows*: Install from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+
+   *Using Homebrew on Mac*: `brew install ffmpeg`
+
+   *Windows*: Install from [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
 
 # Implementation
 
